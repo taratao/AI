@@ -1,0 +1,254 @@
+#include <iostream>
+#include <vector>
+#include <stack>
+#include <queue>
+
+
+using namespace std;
+
+typedef struct State *Pstate;
+
+typedef struct State{
+	int x, y;
+	Pstate parent;
+	int hd;
+};
+
+int max(int a, int b){
+	return a > b? a:b;
+}
+
+int min(int a, int b){
+	return a > b? b:a;
+}
+
+bool goalcheck(Pstate S){
+	if(S->x == 6 || S->y == 6) return true;
+	return false;
+}
+
+Pstate Cyx(Pstate S){ // Chuyen 4 - > 9
+	
+	if(S->x < 9 && S->y > 0){
+		Pstate newState = new State;
+		newState->x = min(9, S->x + S->y);
+		newState->y = max(0, S->y + S->x - 9);
+		newState->parent = S;
+		return newState;
+	}
+	return NULL;
+}
+
+
+Pstate Cxy(Pstate S){ // Chuyen 9 - > 4
+	
+	if(S->x > 0 && S->y < 4){
+		Pstate newState = new State;
+		newState->x = max(0, S->x + S->y - 4);
+		newState->y = min(4, S->y + S->x);
+		newState->parent = S;
+		return newState;
+	}
+	return NULL;
+}
+
+
+Pstate LamDayX(Pstate S){
+	if(S->x < 9){
+		Pstate newState = new State;
+		newState->x = 9;
+		newState->y = S->y;
+		newState->parent = S;
+		return newState;
+	}
+	return NULL;
+}
+
+
+Pstate LamDayY(Pstate S){
+	if(S->y < 4){
+		Pstate newState = new State;
+		newState->x = S->x;
+		newState->y = 4;
+		newState->parent = S;
+		return newState;
+	}
+	return NULL;
+}
+
+
+Pstate LamRongX(Pstate S){
+	if(S->x > 0){
+		Pstate newState = new State;
+		newState->x = 0;
+		newState->y = S->y;
+		newState->parent = S;
+		return newState;
+	}
+	return NULL;
+}
+
+Pstate LamRongY(Pstate S){
+	if(S->y > 0){
+		Pstate newState = new State;
+		newState->x = S->x;
+		newState->y = 0;
+		newState->parent = S;
+		return newState;
+	}
+	return NULL;
+}
+
+
+Pstate call_operator(Pstate S, int op_no){
+	switch(op_no){
+		case 1: return Cyx(S);
+		break;
+		case 2: return Cxy(S);
+		break;
+		case 3: return LamDayX(S);
+		break;
+		case 4: return LamDayY(S);
+		break;
+		case 5: return LamRongX(S);
+		break;
+		case 6: return LamRongY(S);
+		break;
+		default: return NULL;
+	}
+}
+
+bool foundstate(Pstate S, vector<Pstate> openlist){
+	for(Pstate tmp: openlist){
+		if(tmp->x == S->x && tmp->y == S->y) return true;
+	}
+	return false;
+}
+
+
+Pstate DFS(){
+	Pstate pStart = new State;
+	pStart->x = 0;
+	pStart->y = 0;
+	pStart->hd = 0;
+	pStart->parent = NULL;
+	
+	stack<Pstate> Frontier;
+	Frontier.push(pStart);
+	
+	vector<Pstate> explore;
+	
+	Pstate check;
+	
+	cout << "Bat dau\n";
+	
+	while(!Frontier.empty()){
+		
+		check = Frontier.top();
+		Frontier.pop();
+		if(check->hd == 0){
+			cout << "******************: ";
+		}
+		
+		else{
+			switch(check->hd){
+				case 1: cout << "Chuyen tu Y sang X: ";
+				break;
+				case 2: cout << "Chuyen tu X sang Y: ";
+				break;
+				case 3: cout << "Lam day X         : ";
+				break;
+				case 4: cout << "Lam day Y         : ";
+				break;
+				case 5: cout << "Lam rong X        : ";
+				break;
+				case 6: cout << "Lam rong Y        : ";
+				break;
+			}
+		}
+		cout << check->x << " " << check->y <<endl;
+		if(goalcheck(check)){
+			return check;
+		}
+		
+		explore.push_back(check);
+		
+		for(int op_no = 1; op_no <= 6; op_no++){
+			Pstate newState = call_operator(check, op_no);
+			
+			
+			
+			if(newState != NULL){
+				
+				if(foundstate(newState, explore)){
+				     continue;
+		    	}
+		    	
+				newState->hd = op_no;
+			    Frontier.push(newState);
+			}
+		}
+	}
+	return NULL;
+}
+
+
+Pstate BFS(){
+	Pstate pStart = new State;
+	pStart->x = 0;
+	pStart->y = 0;
+	pStart->hd = 0;
+	pStart->parent = NULL;
+	
+	queue<Pstate> Frontier;
+	Frontier.push(pStart);
+	
+	vector<Pstate> explore;
+	
+	Pstate check;
+	
+	cout << "Bat dau\n";
+	
+	while(!Frontier.empty()){
+		
+		check = Frontier.front();
+		Frontier.pop();
+		
+			cout << check->x << " " << check->y <<endl;
+	
+		if(goalcheck(check)){
+			return check;
+		}
+		
+		explore.push_back(check);
+		
+
+		
+		for(int op_no = 1; op_no <= 6; op_no++){
+			Pstate newState = call_operator(check, op_no);
+			
+			
+			
+			if(newState != NULL){
+				
+				if(foundstate(newState, explore)){
+				     continue;
+		    	}
+		    	
+				newState->hd = op_no;
+			    Frontier.push(newState);
+			}
+		}
+	}
+	return NULL;
+}
+
+
+
+int main(){
+	
+	DFS();
+	cout << "********************************\n";
+	BFS();
+	return 0;
+}
